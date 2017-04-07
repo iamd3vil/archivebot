@@ -31,6 +31,8 @@ defmodule Archivebot.Mixfile do
   defp deps do
     [{:slack, "~> 0.11.0"},
      {:ecto, "~> 2.1"},
+     {:distillery, "~> 1.3"},
+     {:conform, "~> 2.2"},
      {:postgrex, ">= 0.0.0"}]
   end
 end
