@@ -11,19 +11,16 @@ defmodule Archivebot do
   def handle_event(%{type: "message", user: user_id}, %{me: %{id: user_id}}, state) do
     {:ok, state}
   end
-  def handle_event(%{type: "message", channel: "D" <> _}, _, state) do
+  def handle_event(message = %{type: "message", channel: "D" <> _}, slack, state) do
+    send_message("Hey. I got a message from you!. Text: #{message.text}", message.channel, slack)
     {:ok, state}
   end
   def handle_event(message = %{type: "message", user: _user_id}, slack, state) do
-    Logger.debug "Channel: #{message.channel}, timestamp: #{message.ts}"
+    Logger.info "Channel: #{message.channel}, timestamp: #{message.ts}, message: #{message.text}"
     :ok = dump_in_db(message)
     # send_message("Hey. I got a message from you.!. Text: #{message.text}", message.channel, slack)
     {:ok, state}
   end
-  # def handle_event(message, slack, state) do
-  #   Logger.debug "Got a message: #{inspect message}"
-  #   {:ok, state}
-  # end
   def handle_event(_, _, state) do
     {:ok, state}
   end
@@ -70,9 +67,17 @@ defmodule Archivebot do
     |> Map.get("name")
   end
 
-  defp get_channel_name(channel_id) do
+  defp get_channel_name("C" <> _ = channel_id) do
     Slack.Web.Channels.info(channel_id)
+    |> IO.inspect
     |> Map.get("channel")
+    |> Map.get("name")
+  end
+
+  defp get_channel_name("G" <> _ = channel_id) do
+    Slack.Web.Groups.info(channel_id)
+    |> IO.inspect
+    |> Map.get("group")
     |> Map.get("name")
   end
 
