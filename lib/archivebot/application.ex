@@ -5,6 +5,8 @@ defmodule Archivebot.Application do
 
   use Application
 
+  require Logger
+
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
@@ -15,12 +17,18 @@ defmodule Archivebot.Application do
       # Starts a worker by calling: Archivebot.Worker.start_link(arg1, arg2, arg3)
       # worker(Archivebot.Worker, [arg1, arg2, arg3]),
       supervisor(Archivebot.Repo, []),
-      worker(Slack.Bot, [Archivebot, [], token])
+      worker(Task, [fn -> run_migrations() end]),
+      worker(Slack.Bot, [Archivebot, [], token]),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Archivebot.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp run_migrations() do
+    Logger.info("Running migrations")
+    Ecto.Migrator.run(Archivebot.Repo, :code.priv_dir(:archivebot), :up, [all: true])
   end
 end
