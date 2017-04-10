@@ -17,7 +17,7 @@ defmodule Archivebot.Application do
       # Starts a worker by calling: Archivebot.Worker.start_link(arg1, arg2, arg3)
       # worker(Archivebot.Worker, [arg1, arg2, arg3]),
       supervisor(Archivebot.Repo, []),
-      worker(Task, [fn -> run_migrations() end]),
+      worker(Task, [fn -> run_migrations() end], restart: :temporary),
       worker(Slack.Bot, [Archivebot, [], token]),
     ]
 
@@ -29,6 +29,6 @@ defmodule Archivebot.Application do
 
   defp run_migrations() do
     Logger.info("Running migrations")
-    Ecto.Migrator.run(Archivebot.Repo, :code.priv_dir(:archivebot), :up, [all: true])
+    Ecto.Migrator.run(Archivebot.Repo, "#{:code.priv_dir(:archivebot)}/repo/migrations", :up, [all: true])
   end
 end
